@@ -1,14 +1,16 @@
 # app/__init__.py
 # third-party imports
-from flask import Flask, render_template
+from flask import Flask, render_template, request, Response
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, login_required
 
 # local imports
 from config import app_config
 from flask_migrate import Migrate
 
 from flask_bootstrap import Bootstrap
+
+from .business import microaneurysms_retrieval
 
 # db variable initialization
 db = SQLAlchemy()
@@ -51,8 +53,11 @@ def create_app(config_name):
     def internal_server_error(error):
         return render_template('errors/500.html', title='Server Error'), 500
 
-    # @app.route('/')
-    # def hello_world():
-    #     return 'Hello World!'
+    @app.route('/microaneurysms', methods=['POST'])
+    @login_required
+    def get_microaneurysms():
+        req_data = request.data
+        response = microaneurysms_retrieval.microaneurysms_extraction(req_data)
+        return Response(response=response, status=200, mimetype="application/json")
 
     return app

@@ -5,13 +5,47 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="intro-message">
-                    <h1>The Dashboard</h1>
-                    <h3>We made it here!</h3>
-                    <hr class="intro-divider">
+                <!--<div class="intro-message">-->
+                    <!--<h1>The Dashboard</h1>-->
+                    <!--<h3>We made it here!</h3>-->
+                    <!--<hr class="intro-divider">-->
+                <!--</div>-->
+                <div class="container">
+
+                    <form method="post" role="form" id="micro_form">
+                        <span class="btn btn-default btn-file">
+                        Browse <input type="file" name="micro_image" id="micro_image">
+                      </span>
+
+                        <button class="btn btn-lg btn-primary btn-block" onclick="microRetrieval()" type="button">Microaneurysms Retrieval </button>
+                    </form>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+var $ = jQuery;
+
+function microRetrieval() {
+    var file = document.getElementById('micro_image').files[0];
+    $.ajax({
+        url: '/microaneurysms',
+        data: file,
+        type: 'POST',
+        contentType:file.type,
+        processData: false,
+        success: function(response) {
+            console.log("response:"+ response['message']);
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+
+}
+
+</script>
 {% endblock %}

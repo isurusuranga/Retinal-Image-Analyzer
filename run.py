@@ -11,7 +11,7 @@ import pymysql
 #flask run
 
 config_name = os.getenv('FLASK_CONFIG')
-application = create_app(config_name)
+application = create_app('development')
 
 if __name__ == '__main__':
     application.run()
