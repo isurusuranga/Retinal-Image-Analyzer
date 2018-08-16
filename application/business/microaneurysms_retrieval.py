@@ -7,6 +7,9 @@ def microaneurysms_extraction(data):
     convert_image = np.fromstring(data, np.uint8)
     # decode image
     img = cv2.imdecode(convert_image, cv2.IMREAD_COLOR)
+    # USING OPENCV SPLIT FUNCTION
+    blue ,geen, red = cv2.split(img)
+
     # build a response dict to send back to client
     response = {'message': 'image received. size={}x{}'.format(img.shape[1], img.shape[0])}
     json_response = json.dumps(response)

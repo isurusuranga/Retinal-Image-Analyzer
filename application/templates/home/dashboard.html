@@ -1,28 +1,58 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block body %}
-<div class="intro-header">
+<div class="dashboard-header">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <!--<div class="intro-message">-->
+        <!--<div class="row">-->
+            <!--<div class="col-lg-4">-->
+                <!--<div class="dashboard-message">-->
                     <!--<h1>The Dashboard</h1>-->
                     <!--<h3>We made it here!</h3>-->
                     <!--<hr class="intro-divider">-->
                 <!--</div>-->
-                <div class="container">
+                <!--<form method="post" role="form" id="micro_form">-->
+                    <!--<span class="btn btn-default" id="upload_micro_img"> Browse-->
+                        <!--<input type="file" name="micro_image" id="micro_image" onchange="loadImage()">-->
+                        <!--&lt;!&ndash;<img src="" style="height: auto;width: auto;" id="uploaded_micro_img">&ndash;&gt;-->
+                    <!--</span>-->
 
-                    <form method="post" role="form" id="micro_form">
-                        <span class="btn btn-default btn-file">
-                        Browse <input type="file" name="micro_image" id="micro_image">
-                      </span>
+                    <!--<button class="btn btn-sm btn-primary" onclick="microRetrieval()" type="button">Microaneurysms Retrieval </button>-->
+                <!--</form>-->
 
-                        <button class="btn btn-lg btn-primary btn-block" onclick="microRetrieval()" type="button">Microaneurysms Retrieval </button>
-                    </form>
+            <!--</div>-->
+        <!--</div>-->
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#home">Severity stage classification</a></li>
+            <li><a data-toggle="tab" href="#menu1">Microaneurysms Extraction</a></li>
+            <li><a data-toggle="tab" href="#menu2">Clinical signs detection</a></li>
+            <li><a data-toggle="tab" href="#menu3">Treatments suggestion</a></li>
+        </ul>
 
-                </div>
+        <div class="tab-content">
+            <div id="home" class="tab-pane fade in active">
+                <h5>Upload Image</h5>
+            </div>
+            <div id="menu1" class="tab-pane fade">
+                <h5 style="color: dimgrey;">Upload Image</h5>
+                <form method="post" role="form" id="micro_form">
+                <span class="btn btn-default" id="upload_micro_img"> Browse
+                <input type="file" name="micro_image" id="micro_image" onchange="loadImage()">
+                    <!--<img src="" style="height: auto;width: auto;" id="uploaded_micro_img">-->
+                </span>
+
+                    <button class="btn btn-sm btn-primary" onclick="microRetrieval()" type="button">Microaneurysms Retrieval </button>
+                </form>
+            </div>
+            <div id="menu2" class="tab-pane fade">
+                <h3>Menu 2</h3>
+                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+            </div>
+            <div id="menu3" class="tab-pane fade">
+                <h3>Menu 3</h3>
+                <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -45,6 +75,17 @@ function microRetrieval() {
         }
     });
 
+}
+
+function loadImage() {
+    var file = document.getElementById('micro_image').files[0];
+    var reader  = new FileReader();
+    reader.onload = function(e)  {
+        var image = document.createElement("img");
+        image.src = e.target.result;
+        document.getElementById('upload_micro_img').appendChild(image);
+    };
+    reader.readAsDataURL(file);
 }
 
 </script>
