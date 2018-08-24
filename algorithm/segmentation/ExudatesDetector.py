@@ -1,4 +1,4 @@
-class MicroaneurysmDetector(object):
+class ExudatesDetector(object):
     def __init__(self, greenComponent):
         self.__greenComponent = greenComponent
 

@@ -2,7 +2,7 @@ import json
 import cv2
 import numpy as np
 
-def microaneurysms_extraction(data):
+def exudates_extraction(data):
     # convert string of image data to uint8
     convert_image = np.fromstring(data, np.uint8)
     # decode image OpenCV uses BGR as its default colour order for images

@@ -10,7 +10,7 @@ from flask_migrate import Migrate
 
 from flask_bootstrap import Bootstrap
 
-from .business import microaneurysms_retrieval
+from .business import exudates_retrieval
 
 # db variable initialization
 db = SQLAlchemy()
@@ -57,7 +57,7 @@ def create_app(config_name):
     @login_required
     def get_microaneurysms():
         req_data = request.data
-        response = microaneurysms_retrieval.microaneurysms_extraction(req_data)
+        response = exudates_retrieval.exudates_extraction(req_data)
         return Response(response=response, status=200, mimetype="application/json")
 
     return app
