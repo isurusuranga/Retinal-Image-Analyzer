@@ -6,8 +6,8 @@ from ..pretrained_models.classification_models.resnet import preprocess_input as
 from keras.applications.densenet import preprocess_input as densenet_preprocess_input
 from keras.applications.vgg16 import preprocess_input as vgg_preprocess_input
 
-def get_dr_severity_classification(file_name, drEnsembleModel, graph):
-    test_img_path = "D:/retinal_data_set_visioncare/Image_Retrieval/New_Train_Test_Data/test_images/" + file_name
+def get_dr_severity_classification(file_name, drEnsembleModel, graph, test_folder):
+    test_img_path = test_folder + file_name
 
     img = image.load_img(test_img_path, target_size=(drEnsembleModel.getInputWidth(), drEnsembleModel.getInputHeight()))
     img_x = image.img_to_array(img)
