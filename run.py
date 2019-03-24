@@ -1,6 +1,8 @@
 import os
 from flask import Flask
 from application import create_app
+from keras.models import load_model
+from keras import Model
 from sqlalchemy import create_engine
 import pymysql
 
@@ -15,4 +17,4 @@ config_name = os.getenv('FLASK_CONFIG')
 application = create_app('development')
 
 if __name__ == '__main__':
-    application.run()
+    application.run(threaded=True)
