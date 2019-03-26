@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required
 
 from keras.models import load_model
+from keras import Model
 from sklearn.externals import joblib
 
 from algorithm.classification_models.EnsembleDRModel import EnsembleDRModel
@@ -17,7 +18,7 @@ from flask_migrate import Migrate
 
 from flask_bootstrap import Bootstrap
 
-from .business import dr_severity_classifier
+from .business import dr_severity_classifier, dr_retrieval
 
 # db variable initialization
 db = SQLAlchemy()
@@ -56,9 +57,12 @@ def create_app(config_name):
     vgg_model._make_predict_function()
     ann_model = load_model('D:/retinal_data_set_visioncare/models/ensemble/ensemble_deep_feature_with_SVD_dr.h5')
     ann_model._make_predict_function()
+    deep_hash_model = load_model('D:/retinal_data_set_visioncare/Image_Retrieval/deep_hash_model.h5')
+    deep_hash_model._make_predict_function()
 
     feature_scalar_filename = "D:/retinal_data_set_visioncare/Image_Retrieval/feature_scaler.save"
     svd_scalar_file_name = "D:/retinal_data_set_visioncare/Image_Retrieval/svd_scaler.save"
+    img_database_path = 'D:/retinal_data_set_visioncare/Image_Retrieval/img_database.csv'
 
     feature_scalar = joblib.load(feature_scalar_filename)
     truncated_svd_scalar = joblib.load(svd_scalar_file_name)
@@ -72,6 +76,12 @@ def create_app(config_name):
     drEnsembleModel.setSVDScalar(truncated_svd_scalar)
     drEnsembleModel.setInputWidth(224)
     drEnsembleModel.setInputHeight(224)
+
+    feature_extraction_layer = ann_model.get_layer('activation_3').output
+    feature_extract_model = Model(inputs=ann_model.input, outputs=feature_extraction_layer)
+
+    hashcode_extraction_layer = deep_hash_model.get_layer('activation_1').output
+    hashcode_extract_model = Model(inputs=deep_hash_model.input, outputs=hashcode_extraction_layer)
 
     graph = tf.get_default_graph()
 
@@ -93,6 +103,23 @@ def create_app(config_name):
         req_data = request.files['retinal_image']
         test_folder = 'D:/retinal_data_set_visioncare/Image_Retrieval/New_Train_Test_Data/test_images/'
         json_response = dr_severity_classifier.get_dr_severity_classification(req_data.filename, drEnsembleModel, graph, test_folder)
+
+        return Response(response=json_response, status=200, mimetype="application/json")
+
+    @app.route('/predictDRSeverityStage', methods=['POST'])
+    @login_required
+    def predict_DR_severeity_stage():
+        img_data = request.get_data()
+        json_response = dr_severity_classifier.get_dr_severity_stage_classification(img_data, drEnsembleModel, graph, 'output.png')
+
+        return Response(response=json_response, status=200, mimetype="application/json")
+
+    @app.route('/retrieveSimilarCases', methods=['POST'])
+    @login_required
+    def retrieve_similar_cases():
+        query_img_data = request.get_data()
+        json_response = dr_retrieval.get_dr_top_ranked_retrieval(query_img_data, drEnsembleModel, feature_extract_model,
+                                                                 hashcode_extract_model, graph, 'query.png', img_database_path)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
