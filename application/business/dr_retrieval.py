@@ -30,8 +30,16 @@ def encode_image_as_base64_dataurl(file):
     return image_data_base64
 
 # decoding an image from base64 into raw representation
+# def convertImage(imgData1, imgSavePath):
+#     imgstr = re.search(r'base64,(.*)', str(imgData1)).group(1)
+#     with open(imgSavePath, 'wb') as output:
+#         output.write(base64.b64decode(imgstr))
 def convertImage(imgData1, imgSavePath):
-    imgstr = re.search(r'base64,(.*)', str(imgData1)).group(1)
+    imgstr = ""
+    if(re.search(r'base64,(.*)', str(imgData1))):
+        imgstr = re.search(r'base64,(.*)', str(imgData1)).group(1)
+    else:
+        imgstr = imgData1
     with open(imgSavePath, 'wb') as output:
         output.write(base64.b64decode(imgstr))
 

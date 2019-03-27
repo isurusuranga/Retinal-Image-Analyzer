@@ -4,8 +4,8 @@
 <div class="dashboard-header">
     <div class="container">
         <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#home">Severity stage classification</a></li>
-            <li><a data-toggle="tab" href="#menu1">Similar cases retrieval</a></li>
+            <li class="active"><a data-toggle="tab" href="#home">Diabetic Retinopathy Analyzer</a></li>
+            <li><a data-toggle="tab" href="#menu1">Neuropathic Ulcer Analyzer</a></li>
             <!--<li><a data-toggle="tab" href="#menu2">Clinical signs detection</a></li>-->
             <!--<li><a data-toggle="tab" href="#menu3">Treatments suggestion</a></li>-->
         </ul>
@@ -92,7 +92,7 @@ function drPredict() {
             $.ajax({
                 url: '/predictDRSeverityStage',
                 type: 'POST',
-                data:imgBase64,
+                data:JSON.stringify({'query_base64':imgBase64}),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {
@@ -120,7 +120,7 @@ function drRetrieveSimilarCases() {
             $.ajax({
                 url: '/retrieveSimilarCases',
                 type: 'POST',
-                data:imgBase64,
+                data:JSON.stringify({'query_base64':imgBase64}),
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {

@@ -1,5 +1,6 @@
 # app/__init__.py
 # third-party imports
+from PIL.ImageChops import constant
 from flask import Flask, render_template, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required
@@ -17,6 +18,8 @@ from config import app_config
 from flask_migrate import Migrate
 
 from flask_bootstrap import Bootstrap
+
+import application.utility.constant as const
 
 from .business import dr_severity_classifier, dr_retrieval
 
@@ -49,23 +52,19 @@ def create_app(config_name):
     from .home import home as home_blueprint
     app.register_blueprint(home_blueprint)
 
-    densenet_model = load_model('D:/retinal_data_set_visioncare/models/imagenet_feature_extractor/densenet/densenet_feature_extractor.h5')
+    densenet_model = load_model(const.DR_DENSE_NET_MODEL_PATH)
     densenet_model._make_predict_function()
-    resnet_model = load_model('D:/retinal_data_set_visioncare/models/imagenet_feature_extractor/resnet/resnet_feature_extractor.h5')
+    resnet_model = load_model(const.DR_RES_NET_MODEL_PATH)
     resnet_model._make_predict_function()
-    vgg_model = load_model('D:/retinal_data_set_visioncare/models/imagenet_feature_extractor/vgg/vgg_feature_extractor.h5')
+    vgg_model = load_model(const.DR_VGG_MODEL_PATH)
     vgg_model._make_predict_function()
-    ann_model = load_model('D:/retinal_data_set_visioncare/models/ensemble/ensemble_deep_feature_with_SVD_dr.h5')
+    ann_model = load_model(const.DR_ANN_MODEL_PATH)
     ann_model._make_predict_function()
-    deep_hash_model = load_model('D:/retinal_data_set_visioncare/Image_Retrieval/deep_hash_model.h5')
+    deep_hash_model = load_model(const.DR_DEEP_HASH_MODEL_PATH)
     deep_hash_model._make_predict_function()
 
-    feature_scalar_filename = "D:/retinal_data_set_visioncare/Image_Retrieval/feature_scaler.save"
-    svd_scalar_file_name = "D:/retinal_data_set_visioncare/Image_Retrieval/svd_scaler.save"
-    img_database_path = 'D:/retinal_data_set_visioncare/Image_Retrieval/img_database.csv'
-
-    feature_scalar = joblib.load(feature_scalar_filename)
-    truncated_svd_scalar = joblib.load(svd_scalar_file_name)
+    feature_scalar = joblib.load(const.DR_FEATURE_SCALAR_FILE_NAME)
+    truncated_svd_scalar = joblib.load(const.DR_SVD_SCALAR_FILE_NAME)
 
     drEnsembleModel = EnsembleDRModel()
     drEnsembleModel.setDenseNetModel(densenet_model)
@@ -74,13 +73,13 @@ def create_app(config_name):
     drEnsembleModel.setANNModel(ann_model)
     drEnsembleModel.setFeatureScalar(feature_scalar)
     drEnsembleModel.setSVDScalar(truncated_svd_scalar)
-    drEnsembleModel.setInputWidth(224)
-    drEnsembleModel.setInputHeight(224)
+    drEnsembleModel.setInputWidth(const.IMG_WIDTH)
+    drEnsembleModel.setInputHeight(const.IMG_HEIGHT)
 
-    feature_extraction_layer = ann_model.get_layer('activation_3').output
+    feature_extraction_layer = ann_model.get_layer(const.DR_ANN_LAST_HIDDEN_LAYER_NAME).output
     feature_extract_model = Model(inputs=ann_model.input, outputs=feature_extraction_layer)
 
-    hashcode_extraction_layer = deep_hash_model.get_layer('activation_1').output
+    hashcode_extraction_layer = deep_hash_model.get_layer(const.DR_DEEP_HASH_LAST_HIDDEN_LAYER_NAME).output
     hashcode_extract_model = Model(inputs=deep_hash_model.input, outputs=hashcode_extraction_layer)
 
     graph = tf.get_default_graph()
@@ -101,25 +100,26 @@ def create_app(config_name):
     @login_required
     def predict_DR_severity():
         req_data = request.files['retinal_image']
-        test_folder = 'D:/retinal_data_set_visioncare/Image_Retrieval/New_Train_Test_Data/test_images/'
-        json_response = dr_severity_classifier.get_dr_severity_classification(req_data.filename, drEnsembleModel, graph, test_folder)
+        json_response = dr_severity_classifier.get_dr_severity_classification(req_data.filename, drEnsembleModel, graph, const.TEST_IMG_FOLDER)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
     @app.route('/predictDRSeverityStage', methods=['POST'])
-    @login_required
+    # @login_required
     def predict_DR_severeity_stage():
-        img_data = request.get_data()
+        #img_data = request.get_data()
+        img_data = request.get_json()['query_base64']
+
         json_response = dr_severity_classifier.get_dr_severity_stage_classification(img_data, drEnsembleModel, graph, 'output.png')
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
     @app.route('/retrieveSimilarCases', methods=['POST'])
-    @login_required
+    # @login_required
     def retrieve_similar_cases():
-        query_img_data = request.get_data()
+        query_img_data = request.get_json()['query_base64']
         json_response = dr_retrieval.get_dr_top_ranked_retrieval(query_img_data, drEnsembleModel, feature_extract_model,
-                                                                 hashcode_extract_model, graph, 'query.png', img_database_path)
+                                                                 hashcode_extract_model, graph, 'query.png', const.DR_IMG_DATABASE_PATH)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
