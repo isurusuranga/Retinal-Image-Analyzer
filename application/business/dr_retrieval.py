@@ -5,6 +5,7 @@ import json
 import numpy as np
 from keras.preprocessing import image
 
+from algorithm.common_models.FundusImage import FundusImage
 from ..pretrained_models.classification_models.resnet import preprocess_input as resnet_preprocess_input
 from keras.applications.densenet import preprocess_input as densenet_preprocess_input
 from keras.applications.vgg16 import preprocess_input as vgg_preprocess_input
@@ -111,12 +112,12 @@ def get_dr_top_ranked_retrieval(query_img_data, drEnsembleModel, feature_extract
     # calculate cosine similarity by feature space and again sort by cosine simillarity and retrieve the results
     dataset["cosine_sim"] = dataset.apply(lambda x: get_cosine_similarity_score(x['deep_features'], query_deep_feature), axis=1)
     dataset = dataset.sort_values(by='cosine_sim', ascending=False).head(10)
-    top_ranked_img_path_list = dataset['img_path'].tolist()
 
     top_ranked_dataurls_list = []
-    if(len(top_ranked_img_path_list) != 0):
-        for img_path in top_ranked_img_path_list:
-            top_ranked_dataurls_list.append(encode_image_as_base64_dataurl(img_path))
+    if dataset.shape[0]:
+        for index, row in dataset.iterrows():
+            fundus_image = FundusImage(encode_image_as_base64_dataurl(row['img_path']), row['label'])
+            top_ranked_dataurls_list.append(fundus_image.__dict__)
 
     json_response = json.dumps(top_ranked_dataurls_list)
     os.remove(imgSavePath)

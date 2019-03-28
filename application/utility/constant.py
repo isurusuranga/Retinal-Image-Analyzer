@@ -6,7 +6,7 @@ DR_DEEP_HASH_MODEL_PATH = "D:/retinal_data_set_visioncare/Image_Retrieval/deep_h
 
 DR_FEATURE_SCALAR_FILE_NAME = "D:/retinal_data_set_visioncare/Image_Retrieval/feature_scaler.save"
 DR_SVD_SCALAR_FILE_NAME = "D:/retinal_data_set_visioncare/Image_Retrieval/svd_scaler.save"
-DR_IMG_DATABASE_PATH = 'D:/retinal_data_set_visioncare/Image_Retrieval/img_database.csv'
+DR_IMG_DATABASE_PATH = 'D:/retinal_data_set_visioncare/Image_Retrieval/image_database.csv'
 DR_ANN_LAST_HIDDEN_LAYER_NAME = "activation_3"
 DR_DEEP_HASH_LAST_HIDDEN_LAYER_NAME = "activation_1"
 

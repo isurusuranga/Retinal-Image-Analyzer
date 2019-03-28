@@ -35,7 +35,7 @@
                     </div>
                 </div>
 
-                <div id="top_retinal_image_list">
+                <div class="grid" id="top_retinal_image_list">
 
                 </div>
 
@@ -131,13 +131,20 @@ function drRetrieveSimilarCases() {
                     for(var i=0; i < data.length; i++) {
                         var galleryDiv = document.createElement('div');
                         galleryDiv.className = 'gallery';
+                        //box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3)
+                        galleryDiv.style="border: 1px solid #ccc;;max-width: 100%;";
 
                         var rankedImg = document.createElement('img');
-                        rankedImg.src = data[i];
-                        rankedImg.width = 280;
-                        rankedImg.height = 280;
+                        rankedImg.src = data[i]['base64Format'];
+                        rankedImg.style="width: 100%;height: auto;";
+
+                        var descDiv = document.createElement('div');
+                        descDiv.className = 'desc';
+                        descDiv.style="color:dimgray;text-align:center;padding: 10px;";
+                        descDiv.innerHTML = data[i]['severityStage'];
 
                         galleryDiv.appendChild(rankedImg);
+                        galleryDiv.appendChild(descDiv);
                         document.getElementById('top_retinal_image_list').appendChild(galleryDiv);
                     }
                 },
