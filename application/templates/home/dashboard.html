@@ -108,6 +108,14 @@ function drPredict() {
     }
 }
 
+function dynamicHover(){
+    this.style.border = "1px solid #777";
+}
+
+function dynamicHoverOut() {
+    this.style.border = "1px solid #ccc";
+}
+
 function drRetrieveSimilarCases() {
     if(document.getElementById('retinal_image').files.length === 0) {
         alert('Please select an fundus image.');
@@ -132,7 +140,7 @@ function drRetrieveSimilarCases() {
                         var galleryDiv = document.createElement('div');
                         galleryDiv.className = 'gallery';
                         //box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3)
-                        galleryDiv.style="border: 1px solid #ccc;;max-width: 100%;";
+                        galleryDiv.style="border: 1px solid #ccc;max-width: 100%;";
 
                         var rankedImg = document.createElement('img');
                         rankedImg.src = data[i]['base64Format'];
@@ -142,6 +150,9 @@ function drRetrieveSimilarCases() {
                         descDiv.className = 'desc';
                         descDiv.style="color:dimgray;text-align:center;padding: 10px;";
                         descDiv.innerHTML = data[i]['severityStage'];
+
+                        galleryDiv.onmouseover = dynamicHover;
+                        galleryDiv.onmouseout = dynamicHoverOut;
 
                         galleryDiv.appendChild(rankedImg);
                         galleryDiv.appendChild(descDiv);
