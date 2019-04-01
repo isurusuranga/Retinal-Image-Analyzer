@@ -9,6 +9,7 @@ from keras.models import load_model
 from keras import Model
 from sklearn.externals import joblib
 
+from algorithm.classification_models.DFUModel import DFUModel
 from algorithm.classification_models.EnsembleDRModel import EnsembleDRModel
 from application.pretrained_models.classification_models import ResNet18
 from application.pretrained_models.classification_models.resnet import preprocess_input as resnet_preprocess_input
@@ -21,7 +22,7 @@ from flask_bootstrap import Bootstrap
 
 import application.utility.constant as const
 
-from .business import dr_severity_classifier, dr_retrieval
+from .business import dr_severity_classifier, dr_retrieval, dfu_severity_classifier
 
 # db variable initialization
 db = SQLAlchemy()
@@ -63,8 +64,16 @@ def create_app(config_name):
     deep_hash_model = load_model(const.DR_DEEP_HASH_MODEL_PATH)
     deep_hash_model._make_predict_function()
 
+    dfu_densenet_model = load_model(const.DFU_DENSE_NET_MODEL_PATH)
+    dfu_densenet_model._make_predict_function()
+    dfu_ann_model = load_model(const.DFU_ANN_MODEL_PATH)
+    dfu_ann_model._make_predict_function()
+
     feature_scalar = joblib.load(const.DR_FEATURE_SCALAR_FILE_NAME)
     truncated_svd_scalar = joblib.load(const.DR_SVD_SCALAR_FILE_NAME)
+
+    dfu_feature_scalar = joblib.load(const.DFU_FEATURE_SCALAR_FILE_NAME)
+    dfu_truncated_svd_scalar = joblib.load(const.DFU_SVD_SCALAR_FILE_NAME)
 
     drEnsembleModel = EnsembleDRModel()
     drEnsembleModel.setDenseNetModel(densenet_model)
@@ -81,6 +90,14 @@ def create_app(config_name):
 
     hashcode_extraction_layer = deep_hash_model.get_layer(const.DR_DEEP_HASH_LAST_HIDDEN_LAYER_NAME).output
     hashcode_extract_model = Model(inputs=deep_hash_model.input, outputs=hashcode_extraction_layer)
+
+    dfuModel = DFUModel()
+    dfuModel.setDenseNetModel(dfu_densenet_model)
+    dfuModel.setANNModel(dfu_ann_model)
+    dfuModel.setFeatureScalar(dfu_feature_scalar)
+    dfuModel.setSVDScalar(dfu_truncated_svd_scalar)
+    dfuModel.setInputWidth(const.IMG_WIDTH)
+    dfuModel.setInputHeight(const.IMG_HEIGHT)
 
     graph = tf.get_default_graph()
 
@@ -107,7 +124,6 @@ def create_app(config_name):
     @app.route('/predictDRSeverityStage', methods=['POST'])
     # @login_required
     def predict_DR_severeity_stage():
-        #img_data = request.get_data()
         img_data = request.get_json()['query_base64']
 
         json_response = dr_severity_classifier.get_dr_severity_stage_classification(img_data, drEnsembleModel, graph, 'output.png')
@@ -120,6 +136,15 @@ def create_app(config_name):
         query_img_data = request.get_json()['query_base64']
         json_response = dr_retrieval.get_dr_top_ranked_retrieval(query_img_data, drEnsembleModel, feature_extract_model,
                                                                  hashcode_extract_model, graph, 'query.png', const.DR_IMG_DATABASE_PATH)
+
+        return Response(response=json_response, status=200, mimetype="application/json")
+
+    @app.route('/predictDFUSeverityStage', methods=['POST'])
+    # @login_required
+    def predict_DFU_severeity_stage():
+        img_data = request.get_json()['query_base64']
+
+        json_response = dfu_severity_classifier.get_dfu_severity_stage_classification(img_data, dfuModel, graph, 'dfu_output.png')
 
         return Response(response=json_response, status=200, mimetype="application/json")
 

@@ -10,6 +10,11 @@ DR_IMG_DATABASE_PATH = 'D:/retinal_data_set_visioncare/Image_Retrieval/image_dat
 DR_ANN_LAST_HIDDEN_LAYER_NAME = "activation_3"
 DR_DEEP_HASH_LAST_HIDDEN_LAYER_NAME = "activation_1"
 
+DFU_FEATURE_SCALAR_FILE_NAME = "D:/DFU_MODELS/DFU_feature_scaler.save"
+DFU_SVD_SCALAR_FILE_NAME = "D:/DFU_MODELS/DFU_SVD_scaler.save"
+DFU_DENSE_NET_MODEL_PATH = "D:/DFU_MODELS/DFU_DenseNet_feature_extractor.h5"
+DFU_ANN_MODEL_PATH = "D:/DFU_MODELS/densenet_deep_feature_svd.h5"
+
 TEST_IMG_FOLDER = 'D:/retinal_data_set_visioncare/Image_Retrieval/New_Train_Test_Data/test_images/'
 
 IMG_WIDTH = 224

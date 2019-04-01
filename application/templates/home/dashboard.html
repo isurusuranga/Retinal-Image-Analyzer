@@ -16,7 +16,7 @@
                     <h5 style="color: dimgrey;margin-top: 0;margin-bottom: 0;">Upload Fundus Image</h5><br>
                     <form method = "post" id = "dr_classification_form" enctype = "multipart/form-data">
                         <span class="btn btn-default">
-                            <input type = "file" name = "retinal_image" id = "retinal_image" onchange="loadImage()"/>
+                            <input type = "file" name = "retinal_image" id = "retinal_image" onchange="loadImage('retinal_image', 'test_retinal_img')"/>
                         </span>
                         <button class="btn btn-success" onclick="drPredict()" type="button">Predict </button>
                         <button class="btn btn-success" onclick="drRetrieveSimilarCases()" type="button">Retrieve similar cases </button>
@@ -41,7 +41,28 @@
 
             </div>
             <div id="menu1" class="tab-pane fade">
+                <div class="jumbotron">
+                    <h5 style="color: dimgrey;margin-top: 0;margin-bottom: 0;">Upload Foot Ulcer Image</h5><br>
+                    <form method = "post" id = "dfu_classification_form" enctype = "multipart/form-data">
+                        <span class="btn btn-default">
+                            <input type = "file" name = "foot_ulcer_image" id = "foot_ulcer_image" onchange="loadImage('foot_ulcer_image', 'test_dfu_ulcer_img')"/>
+                        </span>
+                        <button class="btn btn-success" onclick="dfuPredict()" type="button">Predict </button>
+                        <button class="btn btn-success" onclick="dfuBoundaryDetect()" type="button">Boundary Detection </button>
+                        <button class="btn btn-primary" onclick="" type="button">Clear </button>
+                    </form>
+                    <br>
+                    <div class="container">
+                        <div style="width:30%;float:left;">
+                            <img id="test_dfu_ulcer_img" width="280" height="280" src="#" border="1"/>
+                        </div>
 
+                        <div style="width:70%;float:right;">
+                            <label style="color: dimgrey;">Predicted Severity Stage:</label><br>
+                            <label id="dfu_result" style="color: indianred;">None. (Please upload your foot ulcer image)</label>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="menu2" class="tab-pane fade">
                 <h3>Menu 2</h3>
@@ -97,7 +118,6 @@ function drPredict() {
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {
                     document.getElementById('result').innerHTML = data;
-                    console.log("response DR stage:"+ data);
                 },
 
                 failure:function(errorMsg) {
@@ -132,8 +152,6 @@ function drRetrieveSimilarCases() {
                 dataType: 'json',
                 contentType: "application/json; charset=utf-8",
                 success: function(data) {
-                    console.log("response DR retrieval:");
-                    console.log(JSON.stringify(data));
                     document.getElementById('top_retinal_image_list').innerHTML = "";
 
                     for(var i=0; i < data.length; i++) {
@@ -168,14 +186,46 @@ function drRetrieveSimilarCases() {
     }
 }
 
-function loadImage() {
-    var file = document.getElementById('retinal_image').files[0];
+function loadImage(file_id, img_id) {
+    var file = document.getElementById(file_id).files[0];
     var reader  = new FileReader();
     reader.onload = function(e) {
-        var image = document.getElementById("test_retinal_img");
+        var image = document.getElementById(img_id);
         image.src = e.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+function dfuPredict() {
+    if(document.getElementById('foot_ulcer_image').files.length === 0) {
+        alert('Please select an fundus image.');
+    } else {
+        var file = document.getElementById('foot_ulcer_image').files[0];
+
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(e) {
+            imgBase64 = reader.result;
+            $.ajax({
+                url: '/predictDFUSeverityStage',
+                type: 'POST',
+                data:JSON.stringify({'query_base64':imgBase64}),
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    document.getElementById('dfu_result').innerHTML = data;
+                },
+
+                failure:function(errorMsg) {
+                    alert(errorMsg);
+                }
+            });
+        };
+    }
+}
+    
+function dfuBoundaryDetect() {
+
 }
 
 </script>
