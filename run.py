@@ -17,4 +17,4 @@ config_name = os.getenv('FLASK_CONFIG')
 application = create_app('development')
 
 if __name__ == '__main__':
-    application.run(host='10.10.23.239', threaded=True)
+    application.run(host='192.168.1.7', threaded=True)

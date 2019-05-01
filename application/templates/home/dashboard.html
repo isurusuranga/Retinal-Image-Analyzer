@@ -63,6 +63,11 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row" id="dfu_image_list">
+
+
+                </div>
             </div>
             <div id="menu2" class="tab-pane fade">
                 <h3>Menu 2</h3>
@@ -138,7 +143,7 @@ function dynamicHoverOut() {
 
 function drRetrieveSimilarCases() {
     if(document.getElementById('retinal_image').files.length === 0) {
-        alert('Please select an fundus image.');
+        alert('Please select a fundus image.');
     } else {
         var file = document.getElementById('retinal_image').files[0];
         var reader = new FileReader();
@@ -157,7 +162,6 @@ function drRetrieveSimilarCases() {
                     for(var i=0; i < data.length; i++) {
                         var galleryDiv = document.createElement('div');
                         galleryDiv.className = 'gallery';
-                        //box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3)
                         galleryDiv.style="border: 1px solid #ccc;max-width: 100%;";
 
                         var rankedImg = document.createElement('img');
@@ -225,7 +229,43 @@ function dfuPredict() {
 }
     
 function dfuBoundaryDetect() {
+    if(document.getElementById('foot_ulcer_image').files.length === 0) {
+        alert('Please select a wound image.');
+    } else {
+        var file = document.getElementById('foot_ulcer_image').files[0];
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function(e) {
+            imgBase64 = reader.result;
+            $.ajax({
+                url: '/detectDFUWoundRegions',
+                type: 'POST',
+                data:JSON.stringify({'query_base64':imgBase64}),
+                dataType: 'json',
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    document.getElementById('dfu_image_list').innerHTML = "";
 
+                    for(var i=0; i < data.length; i++) {
+                        var dfuGalleryDiv = document.createElement('div');
+                        dfuGalleryDiv.className = 'column';
+                        dfuGalleryDiv.style="width: 50%; padding: 5px; float:left;";
+
+                        var dfuImg = document.createElement('img');
+                        dfuImg.src = data[i]['base64Format'];
+                        dfuImg.style="width: 100%; height: auto;";
+
+                        dfuGalleryDiv.appendChild(dfuImg);
+                        document.getElementById('dfu_image_list').appendChild(dfuGalleryDiv);
+                    }
+                },
+
+                failure:function(errorMsg) {
+                    alert(errorMsg);
+                }
+            });
+        };
+    }
 }
 
 </script>

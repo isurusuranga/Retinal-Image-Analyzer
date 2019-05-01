@@ -1,6 +1,5 @@
 # app/__init__.py
 # third-party imports
-from PIL.ImageChops import constant
 from flask import Flask, render_template, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required
@@ -22,11 +21,26 @@ from flask_bootstrap import Bootstrap
 
 import application.utility.constant as const
 
-from .business import dr_severity_classifier, dr_retrieval, dfu_severity_classifier
+from .business import dr_severity_classifier, dr_retrieval, dfu_severity_classifier, dfu_wounds_detector
+
+from algorithm.detection_models import custom
+import algorithm.mrcnn.model as modellib
+
+import time
 
 # db variable initialization
 db = SQLAlchemy()
 login_manager = LoginManager()
+
+# Inference Configuration
+maskRCNNConfig = custom.CustomConfig()
+
+# Override the training configurations with a few
+# changes for inferencing.
+class InferenceConfig(maskRCNNConfig.__class__):
+    # Run detection on one image at a time
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
 
 def create_app(config_name):
     app = Flask(__name__, instance_relative_config=True)
@@ -99,6 +113,14 @@ def create_app(config_name):
     dfuModel.setInputWidth(const.IMG_WIDTH)
     dfuModel.setInputHeight(const.IMG_HEIGHT)
 
+    maskRCNNConfig = InferenceConfig()
+
+    # Create model in inference mode
+    with tf.device(const.DEVICE):
+        DFUMaskRCNNModel = modellib.MaskRCNN(mode="inference", model_dir=const.DEFAULT_MASK_RCNN_PATH, config=maskRCNNConfig)
+
+    DFUMaskRCNNModel.load_weights(const.CUSTOM_WEIGHTS_PATH, by_name=True)
+
     graph = tf.get_default_graph()
 
     @app.errorhandler(403)
@@ -125,8 +147,8 @@ def create_app(config_name):
     # @login_required
     def predict_DR_severeity_stage():
         img_data = request.get_json()['query_base64']
-
-        json_response = dr_severity_classifier.get_dr_severity_stage_classification(img_data, drEnsembleModel, graph, 'output.png')
+        img_file = 'output_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
+        json_response = dr_severity_classifier.get_dr_severity_stage_classification(img_data, drEnsembleModel, graph, img_file)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
@@ -134,8 +156,9 @@ def create_app(config_name):
     # @login_required
     def retrieve_similar_cases():
         query_img_data = request.get_json()['query_base64']
+        query_file = 'query_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
         json_response = dr_retrieval.get_dr_top_ranked_retrieval(query_img_data, drEnsembleModel, feature_extract_model,
-                                                                 hashcode_extract_model, graph, 'query.png', const.DR_IMG_DATABASE_PATH)
+                                                                 hashcode_extract_model, graph, query_file, const.DR_IMG_DATABASE_PATH)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 
@@ -143,8 +166,21 @@ def create_app(config_name):
     # @login_required
     def predict_DFU_severeity_stage():
         img_data = request.get_json()['query_base64']
+        img_file = 'dfu_output_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
+        json_response = dfu_severity_classifier.get_dfu_severity_stage_classification(img_data, dfuModel, graph, img_file)
 
-        json_response = dfu_severity_classifier.get_dfu_severity_stage_classification(img_data, dfuModel, graph, 'dfu_output.png')
+        return Response(response=json_response, status=200, mimetype="application/json")
+
+    @app.route('/detectDFUWoundRegions', methods=['POST'])
+    # @login_required
+    def detect_dfu_wound_regions():
+        query_img_data = request.get_json()['query_base64']
+        query_file = 'maskrcnn_query_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
+        wound_boundary_path = 'wound_boundary_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
+        wound_region_path = 'wound_region_{}.png'.format(time.strftime("%Y%m%d-%H%M%S"))
+
+        json_response = dfu_wounds_detector.get_dfu_detected_wound_images(query_img_data, DFUMaskRCNNModel, graph,
+                                                                          query_file, wound_boundary_path, wound_region_path)
 
         return Response(response=json_response, status=200, mimetype="application/json")
 

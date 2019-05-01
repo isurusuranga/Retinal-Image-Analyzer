@@ -19,3 +19,9 @@ TEST_IMG_FOLDER = 'D:/retinal_data_set_visioncare/Image_Retrieval/New_Train_Test
 
 IMG_WIDTH = 224
 IMG_HEIGHT = 224
+
+ROOT_DIR_MASK_RCNN = 'D:/DFU_MODELS/MASK_RCNN/Mask_RCNN-master'
+DEFAULT_MASK_RCNN_PATH = ROOT_DIR_MASK_RCNN + '/logs'
+CUSTOM_WEIGHTS_PATH = DEFAULT_MASK_RCNN_PATH + '/wound20181227T1620/mask_rcnn_wound_0091.h5'
+DEVICE = "/cpu:0"
+TEST_MODE = "inference"
